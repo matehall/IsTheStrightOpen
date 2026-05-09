@@ -1,0 +1,15 @@
+{
+  "status": "CLOSED",
+  "statusLabel": "Closed",
+  "summary": "Iran officially closed the Strait of Hormuz on March 4, 2026, following the U.S.-Israel air war against Iran that began February 28. Operation Project Freedom (May 4–5) escorted only 2 ships through before being paused. Iran's IRGC has signaled safe passage could resume if U.S. ends threats, with Pakistan mediating. Approximately 1,550 commercial vessels and 22,500 mariners remain stranded. Normal traffic (~100 ships/day) is reduced to near zero.",
+  "lastChecked": "2026-05-10T12:00:00Z",
+  "trafficLevel": "~2 ships/day (normal: ~100/day)",
+  "shipsStranded": 1550,
+  "sources": [
+    {"title": "2026 Strait of Hormuz crisis – Wikipedia", "url": "https://en.wikipedia.org/wiki/2026_Strait_of_Hormuz_crisis"},
+    {"title": "Al Jazeera – Iran says passage to be ensured after US pauses operation", "url": "https://www.aljazeera.com/news/2026/5/6/french-container-ship-struck-in-latest-escalation-at-strait-of-hormuz"},
+    {"title": "PBS News – 2 merchant ships cross as Navy helps restore traffic", "url": "https://www.pbs.org/newshour/world/u-s-says-2-merchant-ships-have-crossed-the-strait-of-hormuz-as-navy-helps-to-restore-shipping-traffic"},
+    {"title": "CNN – Project Freedom and 1,600 ships stuck", "url": "https://www.cnn.com/2026/05/06/business/strait-hormuz-shipping-escort"},
+    {"title": "NPR – Pakistan hopeful on U.S.-Iran deal", "url": "https://www.npr.org/2026/05/06/nx-s1-5813497/iran-war-strait-hormuz-updates"}
+  ]
+}

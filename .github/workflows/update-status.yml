@@ -1,0 +1,43 @@
+name: Update Hormuz Status
+
+on:
+  schedule:
+    - cron: "0 * * * *"   # every hour at :00 UTC
+  workflow_dispatch:        # also triggerable manually from the GitHub UI
+
+permissions:
+  contents: write           # needed to push index.html back to the repo
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          # Use a PAT so the commit triggers the Azure deployment workflow
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install anthropic
+
+      - name: Run status updater
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python update_status.py
+
+      - name: Commit & push if changed
+        run: |
+          git config user.name  "hormuz-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git diff --quiet && echo "No changes — status unchanged." || (
+            git add index.html
+            git commit -m "chore: hourly status update"
+            git push
+          )
