@@ -42,10 +42,14 @@ Return ONLY a single valid JSON object — no markdown fences, no explanation, n
   "trafficLevel": "e.g. '~6 ships/day (normal: ~120/day)'",
   "shipsStranded": <integer or null>,
   "sources": [
-    {"title": "Headline or site name", "url": "https://..."}
+    {"title": "Headline or site name", "url": "https://...", "date": "YYYY-MM-DD"}
   ]
 }
 """
+
+
+def strip_cite_tags(text: str) -> str:
+    return re.sub(r'<cite[^>]*>(.*?)</cite>', r'\1', text, flags=re.DOTALL).strip()
 
 
 def get_status() -> dict:
@@ -70,7 +74,10 @@ def get_status() -> dict:
                     text = block.text.strip()
                     m = re.search(r"\{.*\}", text, re.DOTALL)
                     if m:
-                        return json.loads(m.group())
+                        data = json.loads(m.group())
+                        if "summary" in data:
+                            data["summary"] = strip_cite_tags(data["summary"])
+                        return data
             raise ValueError(f"No JSON found in final response:\n{response.content}")
 
         # Continue the agentic loop (tool_use stop)
