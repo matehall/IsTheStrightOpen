@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<script type="application/json" id="cowork-artifact-meta">
+{
+  "name": "Hormuz Strait Status",
+  "schemaVersion": 1,
+  "description": "Live Strait of Hormuz status page updated hourly by GitHub Actions.",
+  "mcpTools": [],
+  "mcpServerNames": []
+}
+</script>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Is the Strait of Hormuz Open?</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f0f2f5;
+    color: #1a1a2e;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px 40px;
+  }
+  .header { text-align: center; margin-bottom: 28px; }
+  .header h1 {
+    font-size: 0.75rem; font-weight: 700; letter-spacing: 2px;
+    color: #1a1a2e; opacity: 0.6; text-transform: uppercase; margin-bottom: 6px;
+  }
+  .header .strait-name { font-size: 1.6rem; font-weight: 800; color: #1a1a2e; letter-spacing: -0.5px; }
+  .status-card {
+    width: 100%; max-width: 520px; border-radius: 20px;
+    padding: 36px 28px 32px; text-align: center; margin-bottom: 20px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.10); position: relative; overflow: hidden;
+  }
+  .status-card::before {
+    content: ''; position: absolute; inset: 0; opacity: 0.07;
+    background: radial-gradient(circle at 60% 30%, #fff 0%, transparent 70%); pointer-events: none;
+  }
+  .status-card.OPEN       { background: linear-gradient(135deg, #16a34a, #22c55e); color: #fff; }
+  .status-card.RESTRICTED { background: linear-gradient(135deg, #d97706, #f59e0b); color: #fff; }
+  .status-card.CLOSED     { background: linear-gradient(135deg, #b91c1c, #ef4444); color: #fff; }
+  .status-card.UNCLEAR    { background: linear-gradient(135deg, #4b5563, #6b7280); color: #fff; }
+  .status-icon { font-size: 3.2rem; margin-bottom: 10px; line-height: 1; }
+  .status-word {
+    font-size: 3.4rem; font-weight: 900; letter-spacing: -1px; line-height: 1;
+    text-transform: uppercase; text-shadow: 0 2px 12px rgba(0,0,0,0.18); margin-bottom: 6px;
+  }
+  .status-sub { font-size: 0.85rem; opacity: 0.85; font-weight: 500; letter-spacing: 0.5px; }
+  .info-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+    width: 100%; max-width: 520px; margin-bottom: 16px;
+  }
+  .info-card { background: #fff; border-radius: 14px; padding: 16px 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+  .info-card .label {
+    font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1.5px;
+    color: #6b7280; font-weight: 600; margin-bottom: 6px;
+  }
+  .info-card .value { font-size: 1.0rem; font-weight: 700; color: #1a1a2e; line-height: 1.3; }
+  .info-card .value.large { font-size: 1.5rem; }
+  .summary-card {
+    background: #fff; border-radius: 14px; padding: 18px;
+    width: 100%; max-width: 520px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  }
+  .summary-card .label {
+    font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1.5px;
+    color: #6b7280; font-weight: 600; margin-bottom: 8px;
+  }
+  .summary-card p { font-size: 0.9rem; line-height: 1.6; color: #374151; }
+  .sources-card {
+    background: #fff; border-radius: 14px; padding: 16px 18px;
+    width: 100%; max-width: 520px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); margin-bottom: 20px;
+  }
+  .sources-card .label {
+    font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1.5px;
+    color: #6b7280; font-weight: 600; margin-bottom: 10px;
+  }
+  .sources-card ul { list-style: none; }
+  .sources-card ul li { padding: 5px 0; border-bottom: 1px solid #f3f4f6; font-size: 0.82rem; }
+  .sources-card ul li:last-child { border-bottom: none; }
+  .sources-card ul li a { color: #2563eb; text-decoration: none; font-weight: 500; }
+  .sources-card ul li a:hover { text-decoration: underline; }
+  .footer { font-size: 0.72rem; color: #9ca3af; text-align: center; }
+  @keyframes pulse-red {
+    0%, 100% { box-shadow: 0 4px 24px rgba(185,28,28,0.3); }
+    50%       { box-shadow: 0 4px 40px rgba(185,28,28,0.6); }
+  }
+  .status-card.CLOSED { animation: pulse-red 2.5s ease-in-out infinite; }
+  @keyframes pulse-orange {
+    0%, 100% { box-shadow: 0 4px 24px rgba(217,119,6,0.3); }
+    50%       { box-shadow: 0 4px 40px rgba(217,119,6,0.55); }
+  }
+  .status-card.RESTRICTED { animation: pulse-orange 3s ease-in-out infinite; }
+</style>
+</head>
+<body>
+
+<!-- DATA ISLAND — updated hourly by GitHub Actions -->
+<script id="hormuz-data" type="application/json">
+{"status":"RESTRICTED","statusLabel":"Restricted","summary":"The Strait of Hormuz remains severely restricted as of May 10, 2026. Only ~40 ships crossed the entire week ending May 3, versus ~120 per day before the conflict. Iran has imposed new transit rules via its Persian Gulf Strait Authority (PGSA), requiring vessels to file declarations for passage. U.S. and Iranian forces exchanged fire on May 7–8, with the U.S. firing on Iranian tankers, raising fears the fragile ceasefire could collapse.","lastChecked":"2026-05-10T14:00:00Z","trafficLevel":"~6 ships/day (normal: ~120/day)","shipsStranded":1000,"sources":[{"title":"2026 Strait of Hormuz crisis – Wikipedia","url":"https://en.wikipedia.org/wiki/2026_Strait_of_Hormuz_crisis"},{"title":"Al Jazeera – US, Iran clash in Hormuz as war escalates (May 8)","url":"https://www.aljazeera.com/news/2026/5/8/us-iran-clash-in-hormuz-as-war-escalates-what-happened-why-it-matters"},{"title":"NPR – U.S. fires on Iranian tankers trying to evade blockade (May 8)","url":"https://www.npr.org/2026/05/08/g-s1-121061/iran-war-updates"},{"title":"CNBC – U.S. and Iran trade fire in Strait of Hormuz (May 7)","url":"https://www.cnbc.com/2026/05/07/iran-war-hormuz-strait-ceasefire-trump.html"},{"title":"CNN – Iran imposes new PGSA rules for Strait passage (May 7)","url":"https://www.cnn.com/2026/05/07/middleeast/iran-hormuz-rules-warime-gains-intl"}]}
+</script>
+
+<div class="header">
+  <h1>Strait Status Monitor</h1>
+  <div class="strait-name">Strait of Hormuz</div>
+</div>
+
+<div id="status-card" class="status-card">
+  <div class="status-icon"></div>
+  <div class="status-word"></div>
+  <div class="status-sub"></div>
+</div>
+
+<div class="info-grid">
+  <div class="info-card">
+    <div class="label">Traffic Level</div>
+    <div class="value" id="traffic-level">—</div>
+  </div>
+  <div class="info-card">
+    <div class="label">Ships Stranded</div>
+    <div class="value large" id="ships-stranded">—</div>
+  </div>
+</div>
+
+<div class="summary-card">
+  <div class="label">Situation Summary</div>
+  <p id="summary-text"></p>
+</div>
+
+<div class="sources-card">
+  <div class="label">Sources</div>
+  <ul id="sources-list"></ul>
+</div>
+
+<div class="footer" id="last-checked"></div>
+
+<script>
+const ICONS = { OPEN: '✅', RESTRICTED: '⚠️', CLOSED: '🚫', UNCLEAR: '❓' };
+const SUBS  = {
+  OPEN:       'Shipping traffic is flowing normally',
+  RESTRICTED: 'Severely limited — military escorts, active threats',
+  CLOSED:     'Officially blockaded — commercial shipping halted',
+  UNCLEAR:    'Conflicting reports — status uncertain'
+};
+
+function formatDate(iso) {
+  try {
+    return new Date(iso).toLocaleString(undefined, {
+      month: 'short', day: 'numeric', year: 'numeric',
+      hour: '2-digit', minute: '2-digit', timeZoneName: 'short'
+    });
+  } catch { return iso; }
+}
+
+const data = JSON.parse(document.getElementById('hormuz-data').textContent);
+
+const card = document.getElementById('status-card');
+card.className = 'status-card ' + (data.status || 'UNCLEAR');
+card.querySelector('.status-icon').textContent = ICONS[data.status] || '❓';
+card.querySelector('.status-word').textContent = data.statusLabel || data.status || 'Unknown';
+card.querySelector('.status-sub').textContent  = SUBS[data.status] || '';
+
+document.getElementById('traffic-level').textContent  = data.trafficLevel || '—';
+document.getElementById('ships-stranded').textContent =
+  data.shipsStranded != null ? Number(data.shipsStranded).toLocaleString() : '—';
+document.getElementById('summary-text').textContent   = data.summary || '—';
+document.getElementById('last-checked').textContent   = 'Last checked: ' + formatDate(data.lastChecked);
+
+const ul = document.getElementById('sources-list');
+ul.innerHTML = (data.sources || []).map(s =>
+  `<li><a href="${s.url}" target="_blank" rel="noopener">${s.title}</a></li>`
+).join('') || '<li style="color:#9ca3af">No sources</li>';
+</script>
+</body>
+</html>
