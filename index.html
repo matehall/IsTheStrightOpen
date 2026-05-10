@@ -137,6 +137,7 @@
 </div>
 
 <div class="footer" id="last-checked"></div>
+<div class="footer" id="next-check" style="margin-top:4px"></div>
 
 <script>
 const ICONS = { OPEN: '✅', RESTRICTED: '⚠️', CLOSED: '🚫', UNCLEAR: '❓' };
@@ -151,9 +152,25 @@ function formatDate(iso) {
   try {
     return new Date(iso).toLocaleString(undefined, {
       month: 'short', day: 'numeric', year: 'numeric',
-      hour: '2-digit', minute: '2-digit', timeZoneName: 'short'
+      hour: '2-digit', minute: '2-digit', hour12: false, timeZoneName: 'short'
     });
   } catch { return iso; }
+}
+
+function nextTopOfHour() {
+  const now = new Date();
+  return new Date(Date.UTC(
+    now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(),
+    now.getUTCHours() + 1, 0, 0, 0
+  ));
+}
+
+function updateCountdown() {
+  const diff = Math.max(0, nextTopOfHour() - Date.now());
+  const m = Math.floor(diff / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+  document.getElementById('next-check').textContent =
+    `Next check in ${m}m ${s.toString().padStart(2,'0')}s`;
 }
 
 const data = JSON.parse(document.getElementById('hormuz-data').textContent);
@@ -174,6 +191,9 @@ const ul = document.getElementById('sources-list');
 ul.innerHTML = (data.sources || []).map(s =>
   `<li><a href="${s.url}" target="_blank" rel="noopener">${s.title}</a></li>`
 ).join('') || '<li style="color:#9ca3af">No sources</li>';
+
+updateCountdown();
+setInterval(updateCountdown, 1000);
 </script>
 </body>
 </html>
