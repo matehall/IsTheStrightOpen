@@ -1,8 +1,8 @@
 name: Update Hormuz Status
 
 on:
-  schedule:
-    - cron: "0 * * * *"   # every hour at :00 UTC
+#  schedule:
+#- cron: "0 * * * *"   # every hour at :00 UTC
   workflow_dispatch:        # also triggerable manually from the GitHub UI
 
 permissions:
